@@ -14,8 +14,6 @@ class CipherExt {
     }
 
     def so(Closure closure) {
-//        closure.resolveStrategy = Closure.DELEGATE_ONLY
-//        closure.delegate = so
         project.configure(so, closure)
     }
 }

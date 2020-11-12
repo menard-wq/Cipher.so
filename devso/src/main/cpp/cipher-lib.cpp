@@ -1,7 +1,3 @@
-//
-// Created by 林帅斌 on 2017/12/7.
-//
-
 #include "include/cipher-lib.h"
 #include "include/extern-keys.h"
 #include "include/Environments.h"
@@ -28,8 +24,10 @@ Java_net_idik_lib_cipher_so_CipherCore_getString(JNIEnv *env, jobject instance, 
     const char *key = env->GetStringUTFChars(key_, 0);
     string keyStr(key);
     string value = _map[keyStr];
+    string ivSpec = _map["iv"];
+    string key_s = _map["key_s"];
     Encryptor *encryptor = new Encryptor(env, environments->getContext());
-    const char *result = encryptor->decrypt(SECRET_KEY, value.c_str());
+    const char *result = encryptor->decrypt(key_s.c_str(), ivSpec.c_str(), value.c_str());
     env->ReleaseStringUTFChars(key_, key);
     return env->NewStringUTF(result);
 }

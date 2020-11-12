@@ -1,111 +1,57 @@
 package net.idik.lib.cipher.so.utils;
 
-import java.io.UnsupportedEncodingException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
-
-import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-
-/**
- * Created by linshuaibin on 2018/1/19.
- */
+import java.nio.charset.StandardCharsets;
 
 public final class AESEncryptor {
 
-    private static final String CHARSET = "UTF-8";
-
-    private static final String HASH_ALGORITHM = "MD5";
+    private final static String HEX = "0123456789ABCDEF";
     private static final String AES_MODE = "AES/CBC/PKCS5Padding";
-
-
     private static byte[] iv = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
     public static void setIv(String iv) {
         try {
-            AESEncryptor.iv = iv.getBytes(CHARSET);
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+            AESEncryptor.iv = iv.getBytes(StandardCharsets.UTF_8);
+        } catch (Exception exception) {
+            exception.printStackTrace();
         }
     }
 
-    public static String encrypt(String key, String message) {
-        byte[] result = null;
-        try {
-            SecretKeySpec keySpec = generateKeySpec(key);
-            result = encrypt(keySpec, iv, message.getBytes(CHARSET));
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        } catch (NoSuchPaddingException e) {
-            e.printStackTrace();
-        } catch (InvalidKeyException e) {
-            e.printStackTrace();
-        } catch (InvalidAlgorithmParameterException e) {
-            e.printStackTrace();
-        } catch (IllegalBlockSizeException e) {
-            e.printStackTrace();
-        } catch (BadPaddingException e) {
-            e.printStackTrace();
-        }
-        if (result == null) {
-            return "";
-        }
-        return Base64.getEncoder().encodeToString(result);
+    public static String enc(String key, String message)
+            throws Exception {
+        byte[] rawKey = getRawKey(key);
+        byte[] result = enc(rawKey, iv, message.getBytes());
+        return toHex(result);
     }
 
-    public static String decrypt(String key, String cipherMessage) {
-        String result = "";
-        try {
-            SecretKeySpec keySpec = generateKeySpec(key);
-            byte[] cipherBytes = Base64.getDecoder().decode(cipherMessage);
-            result = new String(decrypt(keySpec, iv, cipherBytes), CHARSET);
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        } catch (NoSuchPaddingException e) {
-            e.printStackTrace();
-        } catch (InvalidKeyException e) {
-            e.printStackTrace();
-        } catch (InvalidAlgorithmParameterException e) {
-            e.printStackTrace();
-        } catch (IllegalBlockSizeException e) {
-            e.printStackTrace();
-        } catch (BadPaddingException e) {
-            e.printStackTrace();
-        }
-        return result;
+    private static byte[] getRawKey(String key) {
+        SecretKey keySpec = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "AES");
+        return keySpec.getEncoded();
     }
 
-
-    private static SecretKeySpec generateKeySpec(final String key) throws NoSuchAlgorithmException, UnsupportedEncodingException {
-        final MessageDigest digest = MessageDigest.getInstance(HASH_ALGORITHM);
-        digest.update(key.getBytes(CHARSET));
-        byte[] keyBytes = digest.digest();
-        return new SecretKeySpec(keyBytes, "AES");
-    }
-
-    private static byte[] encrypt(SecretKeySpec keySpec, byte[] iv, byte[] message) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
+    private static byte[] enc(byte[] raw, byte[] iv, byte[] clear) throws Exception {
+        SecretKey keySpec = new SecretKeySpec(raw, "AES");
         Cipher cipher = Cipher.getInstance(AES_MODE);
         IvParameterSpec ivParameterSpec = new IvParameterSpec(iv);
         cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivParameterSpec);
-        return cipher.doFinal(message);
+        return cipher.doFinal(clear);
     }
 
-    private static byte[] decrypt(SecretKeySpec keySpec, byte[] iv, byte[] cipherMessage) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
-        Cipher cipher = Cipher.getInstance(AES_MODE);
-        IvParameterSpec ivParameterSpec = new IvParameterSpec(iv);
-        cipher.init(Cipher.DECRYPT_MODE, keySpec, ivParameterSpec);
-        return cipher.doFinal(cipherMessage);
+    public static String toHex(byte[] buf) {
+        if (buf == null)
+            return "";
+        StringBuffer result = new StringBuffer(2 * buf.length);
+        for (byte b : buf) {
+            appendHex(result, b);
+        }
+        return result.toString();
+    }
+
+    private static void appendHex(StringBuffer sb, byte b) {
+        sb.append(HEX.charAt((b >> 4) & 0x0f)).append(HEX.charAt(b & 0x0f));
     }
 
     private AESEncryptor() throws IllegalAccessException {

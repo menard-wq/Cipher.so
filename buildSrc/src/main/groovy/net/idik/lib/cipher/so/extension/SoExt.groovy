@@ -9,6 +9,7 @@ class SoExt {
 
     String signature = ""
     String encryptSeed = "Cipher.so@DEFAULT"
+    String ivSpec = ""
 
     SoExt(Project project) {
         keys = project.container(KeyExt)
@@ -16,14 +17,5 @@ class SoExt {
 
     def keys(Closure closure) {
         keys.configure closure
-    }
-
-    @Override
-    public String toString() {
-        return "SoExt{" +
-                "keys=" + keys +
-                ", signature='" + signature + '\'' +
-                ", secretKey='" + encryptSeed + '\'' +
-                '}';
     }
 }

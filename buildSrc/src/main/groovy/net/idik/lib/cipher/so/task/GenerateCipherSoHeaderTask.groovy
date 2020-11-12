@@ -24,6 +24,9 @@ class GenerateCipherSoHeaderTask extends DefaultTask {
     @Input
     String secretKey
 
+    @Input
+    String iv
+
     GenerateCipherSoHeaderTask() {
         group = GROUP_NAME
     }
@@ -35,13 +38,12 @@ class GenerateCipherSoHeaderTask extends DefaultTask {
         new CipherSoHeaderBuilder(TARGET_FILE_NAME, keyExts)
                 .setSignature(signature)
                 .setSecretKey(secretKey)
+                .setIv(iv)
                 .build()
                 .each {
-            writer.append(it)
-        }
+                    writer.append(it)
+                }
         writer.flush()
         writer.close()
     }
-
-
 }

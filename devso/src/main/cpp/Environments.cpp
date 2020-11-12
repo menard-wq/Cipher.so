@@ -1,7 +1,3 @@
-//
-// Created by 林帅斌 on 2017/12/24.
-//
-
 #include <string>
 #include "include/Environments.h"
 #include "include/utils.h"
@@ -23,48 +19,47 @@ bool Environments::checkSignature() {
     if (origin_signature.empty()) {
         return true;
     }
-    jobject package_info = getPackageInfo();
-    jclass package_info_clz = jniEnv->GetObjectClass(package_info);
-    jfieldID signatures_field_id = jniEnv->GetFieldID(package_info_clz, "signatures",
-                                                      "[Landroid/content/pm/Signature;");
-    jobjectArray signatures = (jobjectArray) jniEnv->GetObjectField(package_info,
-                                                                    signatures_field_id);
-    jclass signature_clz = jniEnv->FindClass("android/content/pm/Signature");
-    jmethodID get_hashcode_method_id = jniEnv->GetMethodID(signature_clz, "hashCode", "()I");
-    int size = jniEnv->GetArrayLength(signatures);
+    jobject packageManger = getPackageManager();
+    jstring packageName = getPackageName();
+
+    jclass coreClz = jniEnv->FindClass("net/idik/lib/cipher/so/CipherCore");
     bool result = false;
-    for (int i = 0; i < size; i++) {
-        jobject signature = jniEnv->GetObjectArrayElement(signatures, i);
-        int signature_hashcode = jniEnv->CallIntMethod(signature, get_hashcode_method_id);
-        jniEnv->DeleteLocalRef(signature);
-        if (to_string(signature_hashcode) == origin_signature) {
-            result = true;
-            break;
+    if(coreClz != NULL){
+        jmethodID get_sig_method_id = jniEnv->GetStaticMethodID(coreClz, "getSignatures", "(Landroid/content/pm/PackageManager;Ljava/lang/String;)[Landroid/content/pm/Signature;");
+        if(get_sig_method_id != NULL){
+            jobjectArray signatures = (jobjectArray) jniEnv->CallStaticObjectMethod(coreClz,
+                                                                     get_sig_method_id,
+                                                                     packageManger,
+                                                                     packageName);
+            jclass signature_clz = jniEnv->FindClass("android/content/pm/Signature");
+            jmethodID get_hashcode_method_id = jniEnv->GetMethodID(signature_clz, "hashCode", "()I");
+            int size = jniEnv->GetArrayLength(signatures);
+            for (int i = 0; i < size; i++) {
+                jobject signature = jniEnv->GetObjectArrayElement(signatures, i);
+                int signature_hashcode = jniEnv->CallIntMethod(signature, get_hashcode_method_id);
+                jniEnv->DeleteLocalRef(signature);
+                if (to_string(signature_hashcode) == origin_signature) {
+                    result = true;
+                    break;
+                }
+            }
+            jniEnv->DeleteLocalRef(signatures);
+            jniEnv->DeleteLocalRef(signature_clz);
         }
     }
-    jniEnv->DeleteLocalRef(package_info);
-    jniEnv->DeleteLocalRef(package_info_clz);
-    jniEnv->DeleteLocalRef(signatures);
-    jniEnv->DeleteLocalRef(signature_clz);
+    jniEnv->DeleteLocalRef(packageManger);
+    jniEnv->DeleteLocalRef(coreClz);
     return result;
 }
 
-jobject Environments::getPackageInfo() {
+jobject Environments::getPackageManager() {
     jclass context_clz = jniEnv->GetObjectClass(context);
     jmethodID get_package_manager_method_id = jniEnv->GetMethodID(context_clz,
                                                                   "getPackageManager",
                                                                   "()Landroid/content/pm/PackageManager;");
     jobject package_manager = jniEnv->CallObjectMethod(context, get_package_manager_method_id);
-    jclass package_manager_clz = jniEnv->GetObjectClass(package_manager);
-    jmethodID get_package_info_method_id = jniEnv->GetMethodID(package_manager_clz,
-                                                               "getPackageInfo",
-                                                               "(Ljava/lang/String;I)Landroid/content/pm/PackageInfo;");
-    jobject package_info = jniEnv->CallObjectMethod(package_manager, get_package_info_method_id,
-                                                    getPackageName(), 64);
     jniEnv->DeleteLocalRef(context_clz);
-    jniEnv->DeleteLocalRef(package_manager);
-    jniEnv->DeleteLocalRef(package_manager_clz);
-    return package_info;
+    return package_manager;
 }
 
 jstring Environments::getPackageName() {

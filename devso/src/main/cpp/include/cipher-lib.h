@@ -1,7 +1,3 @@
-//
-// Created by 林帅斌 on 2017/12/7.
-//
-
 #ifndef CIPHERSO_CIPHER_LIB_H
 #define CIPHERSO_CIPHER_LIB_H
 

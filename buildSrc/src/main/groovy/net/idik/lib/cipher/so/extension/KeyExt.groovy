@@ -10,12 +10,4 @@ class KeyExt implements Serializable {
     KeyExt(String name) {
         this.name = name
     }
-
-    @Override
-    String toString() {
-        return "KeyExt{" +
-                "name='" + name + '\'' +
-                ", value='" + value + '\'' +
-                '}';
-    }
 }

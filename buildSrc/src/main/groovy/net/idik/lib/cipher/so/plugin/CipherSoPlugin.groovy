@@ -55,6 +55,7 @@ class CipherSoPlugin implements Plugin<Project> {
                 it.outputDir = IOUtils.getNativeHeaderDir(project)
                 it.signature = configs.signature
                 it.secretKey = configs.encryptSeed
+                it.iv = configs.ivSpec
             }
             project.getTasksByName("generateJsonModel${StringUtils.capitalize(variant.name)}", false).each {
                 it.dependsOn copyNativeArchiveTask

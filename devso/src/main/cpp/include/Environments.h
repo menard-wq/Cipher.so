@@ -1,7 +1,3 @@
-//
-// Created by 林帅斌 on 2017/12/24.
-//
-
 #ifndef CIPHERSO_ENVIRONMENTCHECKER_H
 #define CIPHERSO_ENVIRONMENTCHECKER_H
 
@@ -14,7 +10,7 @@ private:
     JNIEnv *jniEnv;
     jobject context;
 
-    jobject getPackageInfo();
+    jobject getPackageManager();
 
     jstring getPackageName();
 

@@ -1,7 +1,3 @@
-//
-// Created by 林帅斌 on 2017/12/24.
-//
-
 #ifndef CIPHERSO_LOGGER_H
 #define CIPHERSO_LOGGER_H
 

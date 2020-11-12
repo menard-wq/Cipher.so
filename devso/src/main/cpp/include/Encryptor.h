@@ -1,7 +1,3 @@
-//
-// Created by 林帅斌 on 2018/1/17.
-//
-
 #ifndef CIPHER_SO_ENCRYPTOR_H
 #define CIPHER_SO_ENCRYPTOR_H
 
@@ -18,7 +14,7 @@ private:
 public:
     Encryptor(JNIEnv *jniEnv, jobject context);
 
-    const char *decrypt(const char *key, const char *cipher_message);
+    const char *decrypt(const char *key, const char *iv, const char *cipher_message);
 };
 
 
